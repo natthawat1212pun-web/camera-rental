@@ -1,25 +1,10 @@
 const express = require('express');
-const { Pool } = require('pg');
 const cors = require('cors');
+const pool = require('./db'); // <--- เรียกใช้ตัวเชื่อม Supabase จากไฟล์ db.js
 const app = express();
-const port = 3000;
 
 app.use(cors());
 app.use(express.json());
-
-// --- Config Database ---
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'camera_rental_db',
-  password: '1234',    // <--- 🔴 แก้เป็นรหัส pgAdmin ของคุณ (เช่น '1234')
-  port: 5432,
-});
-
-pool.connect((err) => {
-  if (err) console.error('❌ เชื่อมต่อ Database ไม่สำเร็จ:', err.stack);
-  else console.log('✅ Connected to PostgreSQL database.');
-});
 
 // ---------------- API ENDPOINTS ----------------
 
@@ -92,11 +77,14 @@ app.get('/api/available', (req, res) => {
 // 4. สร้างการจอง
 app.post('/api/bookings', (req, res) => {
   const { itemId, customerName, start, end, totalPrice } = req.body;
+  
+  // เช็คคิวซ้อนอีกทีเพื่อความชัวร์
   const sqlCheck = `SELECT * FROM bookings WHERE item_id = $1 AND start_date < $2 AND end_date > $3`;
   pool.query(sqlCheck, [itemId, end, start], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.rows.length > 0) return res.status(400).json({ error: "❌ ไม่ว่าง: มีคนจองเวลานี้แล้ว" });
 
+    // บันทึกการจอง
     const sqlInsert = `
         INSERT INTO bookings (item_id, title, start_date, end_date, price, status) 
         VALUES ($1, $2, $3, $4, $5, 'booked') 
@@ -113,6 +101,8 @@ app.post('/api/bookings', (req, res) => {
 app.put('/api/bookings/:id', (req, res) => {
   const { itemId, customerName, start, end, totalPrice } = req.body;
   const id = req.params.id;
+  
+  // เช็คว่าชนกับรายการอื่นไหม (ยกเว้นตัวเอง)
   const sqlCheck = `SELECT * FROM bookings WHERE item_id = $1 AND start_date < $2 AND end_date > $3 AND id != $4`;
   pool.query(sqlCheck, [itemId, end, start, id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -135,5 +125,5 @@ app.delete('/api/bookings/:id', (req, res) => {
   });
 });
 
-// app.listen(port, () => { ... });  <-- ปิดอันเก่าไปเลย
+// Export ให้ Vercel เอาไปใช้
 module.exports = app;
