@@ -13,11 +13,7 @@
   ],
   "routes": [
     {
-      "src": "/cameras",
-      "dest": "/backend/server.js"
-    },
-    {
-      "src": "/bookings",
+      "src": "/api/(.*)",
       "dest": "/backend/server.js"
     },
     {
