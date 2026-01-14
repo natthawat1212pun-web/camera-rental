@@ -135,6 +135,5 @@ app.delete('/api/bookings/:id', (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
-});
+// app.listen(port, () => { ... });  <-- ปิดอันเก่าไปเลย
+module.exports = app;

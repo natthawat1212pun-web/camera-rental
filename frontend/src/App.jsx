@@ -6,7 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import './App.css'; 
 
 // --- Config IP Address ---
-const API_URL = 'http://192.168.1.103:3000'; 
+const API_URL = ''; 
 
 // --- 🎨 ชุดสีสำหรับแยกประเภทกล้อง (แก้ไขใหม่: เอาสีเทาออก) ---
 const cameraColors = [
